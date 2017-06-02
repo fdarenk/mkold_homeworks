@@ -1,0 +1,21 @@
+from pymorphy2 import MorphAnalyzer
+morph = MorphAnalyzer()
+
+def all_lemmas():
+    corpus = open('1grams-3.txt', 'r', encoding = 'UTF-8')
+    lemmas = {}
+    lexemes = []
+    for string in corpus.readlines():
+        wordform = string.split('\t')[1].strip('\n')
+        analysis = morph.parse(wordform)
+        if analysis[0].normal_form not in lexemes:
+            lemmas[analysis[0].tag] = analysis[0].normal_form
+            lexemes.append(analysis[0].normal_form)
+    corpus.close()
+
+def main():
+    inp = input('pisci')
+
+if __name__ == '__main__':
+    all_lemmas()
+    main()

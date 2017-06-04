@@ -1,21 +1,50 @@
 from pymorphy2 import MorphAnalyzer
 morph = MorphAnalyzer()
+import numpy.random as rand, re
+
+def main():
+    print(operate(input('Напишите что-нибудь: ')))
+
+def operate(text):
+    gram_coll = all_lemmas()
+    words = text.split(' ')
+    new_words = []
+    for word in words:
+        res_word = re.search('(\W*)([\w]*)(\W*)', word)
+        punct_l = res_word.group(1).strip('\n\t')
+        token = res_word.group(2).strip('\n\t')
+        punct_r = res_word.group(3).strip('\n\t')
+        new_word = punct_l + generate_token(token, gram_coll) + punct_r
+        new_words.append(new_word)
+    return ' '.join(new_words)
 
 def all_lemmas():
     corpus = open('1grams-3.txt', 'r', encoding = 'UTF-8')
-    lemmas = {}
+    gram_coll = {}
     lexemes = []
     for string in corpus.readlines():
         wordform = string.split('\t')[1].strip('\n')
         analysis = morph.parse(wordform)
-        if analysis[0].normal_form not in lexemes:
-            lemmas[analysis[0].tag] = analysis[0].normal_form
-            lexemes.append(analysis[0].normal_form)
+        for ana in analysis:
+            if str(ana.normal_form) not in lexemes:
+                gram = str(ana.tag).split(' ')[0]
+                if gram in gram_coll:
+                    gram_coll[gram].append(str(ana.normal_form))
+                else:
+                    gram_coll[gram] = [str(ana.normal_form)]
+                lexemes.append(str(ana.normal_form))
     corpus.close()
+    return gram_coll
 
-def main():
-    inp = input('pisci')
+def generate_token(token, gram_coll):
+    analysis = morph.parse(token)
+    rand_num = rand.choice(range(len(analysis)))
+    gram = str(analysis[rand_num].tag).split(' ')[0]
+    lexeme = rand.choice(gram_coll[gram])
+    infl = str(analysis[rand_num].tag).split(' ')[1]
+    lex_ana = morph.parse(lexeme)[0]
+    new_token = str(lex_ana.inflect(set(infl.split(','))).word)
+    return new_token
 
 if __name__ == '__main__':
-    all_lemmas()
     main()
